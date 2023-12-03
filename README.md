@@ -12,7 +12,7 @@ Please note that this program implements the bare minimum of functionality neede
 
 2. Make sure you have [.NET 6 runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) installed.
 
-3. Download the latest version of TL2BetaMiniLobby from [releases](./releases).
+3. Download the latest version of TL2BetaMiniLobby from [releases](https://github.com/Crypto137/TL2BetaMiniLobby/releases).
 
 4. Launch and exit the beta at least once to generate the local settings file.
 
