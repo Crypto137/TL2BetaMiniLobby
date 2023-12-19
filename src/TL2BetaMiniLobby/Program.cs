@@ -4,10 +4,9 @@ namespace TL2BetaMiniLobby
 {
     public class Program
     {
-        public static LobbyServer LobbyServer { get; private set; }
-        public static Thread LobbyServerThread { get; private set; }
-
         public static bool MessageDumpMode { get; private set; } = false;
+
+        public static LobbyServer LobbyServer { get; private set; }
 
         static void Main(string[] args)
         {
@@ -22,10 +21,9 @@ namespace TL2BetaMiniLobby
                 }
             }
 
-            // Start lobby server
+            // Create and start the lobby server
             LobbyServer = new();
-            LobbyServerThread = new(LobbyServer.Run) { IsBackground = true, CurrentCulture = CultureInfo.InvariantCulture };
-            LobbyServerThread.Start();
+            LobbyServer.Start();
 
             // Process input
             while (true)

@@ -9,30 +9,35 @@ namespace TL2BetaMiniLobby
     /// </summary>
     public class LobbyClient
     {
-        private readonly byte[] _buffer = new byte[1024];
-        private readonly LobbyServer _lobbyServer;
-        private readonly TcpClient _tcpClient;
+        private readonly byte[] _receiveBuffer = new byte[1024];
+        private readonly LobbyServer _server;
 
-        public string Username { get; set; } = "Unknown";
+        public TcpClient TcpClient { get; }
+        public string Username { get; set; } = string.Empty;
 
         public LobbyClient(LobbyServer server, TcpClient tcpClient)
         {
-            _lobbyServer = server;
-            _tcpClient = tcpClient;
+            _server = server;
+            TcpClient = tcpClient;
         }
 
-        public void Run()
+        /// <summary>
+        /// Receives and handles data from the connected client asynchronously.
+        /// </summary>
+        /// <returns></returns>
+        public async Task ReceiveDataAsync(CancellationToken cancellationToken)
         {
             while (true)
             {
                 try
                 {
-                    if (_tcpClient.Client == null) break;
+                    if (TcpClient.Client == null) break;
 
-                    _tcpClient.Client.Receive(_buffer, SocketFlags.None);
+                    // Receive data asynchronously
+                    await TcpClient.Client.ReceiveAsync(_receiveBuffer, SocketFlags.None).WaitAsync(cancellationToken);
 
                     // Parse packet and try to handle its message
-                    Packet packet = new(_buffer);
+                    Packet packet = new(_receiveBuffer);
                     if (MessageHandler.HandleMessage(this, packet.Message) == false)
                         Console.WriteLine($"Unhandled message: {packet.Opcode}");
 
@@ -43,9 +48,11 @@ namespace TL2BetaMiniLobby
                         SaveMessageToFile(packet);
                     }
                 }
-                catch
+                catch (TaskCanceledException) { return; }
+                catch (Exception e)
                 {
-                    break;
+                    Console.WriteLine(e.Message);
+                    Disconnect();
                 }
             }
         }
@@ -55,9 +62,7 @@ namespace TL2BetaMiniLobby
         /// </summary>
         public void Disconnect()
         {
-            Console.WriteLine($"{Username} disconnected");
-            _tcpClient.Close();
-            _lobbyServer.RemoveClient(this);
+            _server.DisconnectClient(this);
         }
 
         /// <summary>
@@ -66,7 +71,7 @@ namespace TL2BetaMiniLobby
         public void Send(LobbyMessage message)
         {
             Packet packet = new(message);
-            _tcpClient.Client.Send(packet.Serialize());
+            TcpClient.Client.Send(packet.Serialize());
         }
 
         /// <summary>
