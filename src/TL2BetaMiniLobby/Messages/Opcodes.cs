@@ -1,4 +1,4 @@
-﻿namespace TL2BetaMiniLobby
+﻿namespace TL2BetaMiniLobby.Messages
 {
     public enum LobbyOpcode : byte
     {

@@ -4,7 +4,9 @@ namespace TL2BetaMiniLobby.Messages
 {
     public class LobbyMessage
     {
-        public byte[] RawData { get; }
+        public byte[] RawData { get; private set; } = Array.Empty<byte>();
+
+        public LobbyMessage() { }
 
         public LobbyMessage(byte[] rawData)
         {
@@ -28,7 +30,22 @@ namespace TL2BetaMiniLobby.Messages
 
         public virtual void Encode(BinaryWriter writer) => writer.Write(RawData);
 
-        public virtual void BuildString(StringBuilder sb)
+        /// <summary>
+        /// Serializes this message and updates the RawData property.
+        /// </summary>
+        public byte[] Serialize()
+        {
+            using (MemoryStream stream = new())
+            using (BinaryWriter writer = new(stream))
+            {
+                Encode(writer);
+                writer.Flush();
+                RawData = stream.ToArray();
+                return RawData;
+            }
+        }
+
+        protected virtual void BuildString(StringBuilder sb)
         {
             sb.AppendLine($"Raw Data: {RawData.ToHexString()}");
         }

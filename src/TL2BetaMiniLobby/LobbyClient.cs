@@ -1,15 +1,18 @@
 ﻿using System.Net.Sockets;
-using TL2BetaMiniLobby.Messages.Definitions;
+using TL2BetaMiniLobby.Messages;
 
 namespace TL2BetaMiniLobby
 {
+    /// <summary>
+    /// Represents a client connected to a lobby server.
+    /// </summary>
     public class LobbyClient
     {
         private readonly byte[] _buffer = new byte[1024];
         private readonly LobbyServer _lobbyServer;
         private readonly TcpClient _tcpClient;
 
-        public string Username { get; private set; } = "Unknown";
+        public string Username { get; set; } = "Unknown";
 
         public LobbyClient(LobbyServer server, TcpClient tcpClient)
         {
@@ -26,7 +29,11 @@ namespace TL2BetaMiniLobby
                     if (_tcpClient.Client == null) break;
 
                     _tcpClient.Client.Receive(_buffer, SocketFlags.None);
-                    HandlePacket(new(_buffer));
+
+                    // Parse packet and try to handle its message
+                    Packet packet = new(_buffer);
+                    if (MessageHandler.HandleMessage(this, packet.Message) == false)
+                        Console.WriteLine($"Unhandled message: {packet.Opcode}");
                 }
                 catch
                 {
@@ -35,6 +42,9 @@ namespace TL2BetaMiniLobby
             }
         }
 
+        /// <summary>
+        /// Disconnects this client from the server.
+        /// </summary>
         public void Disconnect()
         {
             Console.WriteLine($"{Username} disconnected");
@@ -42,48 +52,12 @@ namespace TL2BetaMiniLobby
             _lobbyServer.RemoveClient(this);
         }
 
-        private void HandlePacket(Packet packet)
+        /// <summary>
+        /// Sends a message to the server.
+        /// </summary>
+        public void Send(LobbyMessage message)
         {
-            switch (packet.Opcode)
-            {
-                case LobbyOpcode.NetConnectMsg:
-                    SendMessage(LobbyOpcode.NetConnectOkMsg, HardcodedPayloads.NetConnectOkMsg);
-                    break;
-
-                case LobbyOpcode.NetDisconnectMsg:
-                    Disconnect();
-                    break;
-
-                case LobbyOpcode.LobbyStartLoginMsg:
-                    LobbyStartLoginMsg startLoginMessage = new(packet.BasePayload);
-                    Username = startLoginMessage.Username;
-
-                    SendMessage(LobbyOpcode.LobbyLoginChallengeMsg, HardcodedPayloads.LobbyLoginChallengeMsg);
-                    break;
-
-                case LobbyOpcode.LobbyLoginResponseMsg:
-                    Console.WriteLine($"{Username} logged in");
-                    SendMessage(LobbyOpcode.LobbyLoginResultMsg, HardcodedPayloads.LobbyLoginResult);
-                    break;
-
-                case LobbyOpcode.LobbyCreateGameServerMsg:
-                    Console.WriteLine($"{Username} created a game server");
-                    SendMessage(LobbyOpcode.LobbyCreateGameResponseMsg, HardcodedPayloads.LobbyCreateGameResponseMsg);
-                    break;
-
-                case LobbyOpcode.LobbyKeepaliveMsg:
-                    SendMessage(LobbyOpcode.LobbyKeepaliveMsg, Array.Empty<byte>());
-                    break;
-
-                default:
-                    Console.WriteLine($"Unhandled message: {packet.Opcode}");
-                    break;
-            }
-        }
-
-        private void SendMessage(LobbyOpcode opcode, byte[] payload)
-        {
-            Packet packet = new(opcode, payload);
+            Packet packet = new(message);
             _tcpClient.Client.Send(packet.Serialize());
         }
     }
