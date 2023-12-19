@@ -1,4 +1,5 @@
 ﻿using System.Net.Sockets;
+using System.Reflection;
 using TL2BetaMiniLobby.Messages;
 
 namespace TL2BetaMiniLobby
@@ -34,6 +35,13 @@ namespace TL2BetaMiniLobby
                     Packet packet = new(_buffer);
                     if (MessageHandler.HandleMessage(this, packet.Message) == false)
                         Console.WriteLine($"Unhandled message: {packet.Opcode}");
+
+                    // Dump the message if needed
+                    if (Program.MessageDumpMode)
+                    {
+                        Console.WriteLine(packet.Message.RawData.ToHexString());
+                        SaveMessageToFile(packet);
+                    }
                 }
                 catch
                 {
@@ -59,6 +67,22 @@ namespace TL2BetaMiniLobby
         {
             Packet packet = new(message);
             _tcpClient.Client.Send(packet.Serialize());
+        }
+
+        /// <summary>
+        /// Saves a raw message to a file.
+        /// </summary>
+        private void SaveMessageToFile(Packet packet)
+        {
+            // Create packet directory if needed
+            string root = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string packetDir = Path.Combine(root, "DumpedMessages");
+            if (Directory.Exists(packetDir) == false)
+                Directory.CreateDirectory(packetDir);
+
+            // Save message to a file
+            string filePath = $"[{DateTime.Now:yyyy-dd-MM_HH.mm.ss.fff}] {packet.Opcode}.bin";
+            File.WriteAllBytes(Path.Combine(packetDir, filePath), packet.Message.RawData);
         }
     }
 }

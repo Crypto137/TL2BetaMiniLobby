@@ -7,9 +7,20 @@ namespace TL2BetaMiniLobby
         public static LobbyServer LobbyServer { get; private set; }
         public static Thread LobbyServerThread { get; private set; }
 
+        public static bool MessageDumpMode { get; private set; } = false;
+
         static void Main(string[] args)
         {
             Console.WriteLine("TL2BetaMiniLobby starting...");
+
+            foreach (string arg in args)
+            {
+                if (arg.ToLower() == "-dump")
+                {
+                    MessageDumpMode = true;
+                    Console.WriteLine("Message dump mode enabled");
+                }
+            }
 
             // Start lobby server
             LobbyServer = new();
