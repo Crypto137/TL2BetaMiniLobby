@@ -32,5 +32,18 @@ namespace TL2BetaMiniLobby
             writer.Write((byte)@string.Length);
             writer.Write(bytes);
         }
+
+        public static ushort ReadUInt16BigEndian(this BinaryReader reader)
+        {
+            ushort value = (ushort)(reader.ReadByte() << 8);
+            value |= reader.ReadByte();
+            return value;
+        }
+
+        public static void WriteUInt16BigEndian(this BinaryWriter writer, ushort value)
+        {
+            writer.Write((byte)(value >> 8));
+            writer.Write((byte)(value & 0xFF));
+        }
     }
 }
