@@ -48,7 +48,7 @@ namespace TL2BetaMiniLobby.Messages
 
         private static void OnCreateGameServerMsg(LobbyClient client, LobbyCreateGameServerMsg message)
         {
-            Console.WriteLine($"{client.Username} created a game server: {message.Name} (id 0x{message.GameServerId})");
+            Console.WriteLine($"{client.Username} created a game server: {message.Name} (id 0x{message.GameServerId:X})");
             client.Send(new LobbyCreateGameResponseMsg() { Response = CreateGameResponse.Success });
         }
 
