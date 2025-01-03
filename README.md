@@ -10,7 +10,7 @@ Please note that this program implements the bare minimum of functionality neede
 
 1. Get yourself a copy of Torchlight 2 beta.
 
-2. Make sure you have [.NET 6 runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) installed.
+2. Make sure you have [.NET 8 runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) installed.
 
 3. Download the latest version of TL2BetaMiniLobby from [releases](https://github.com/Crypto137/TL2BetaMiniLobby/releases).
 
