@@ -39,19 +39,19 @@ namespace TL2BetaMiniLobby
                     // Parse packet and try to handle its message
                     Packet packet = new(_receiveBuffer);
                     if (MessageHandler.HandleMessage(this, packet.Message) == false)
-                        Console.WriteLine($"Unhandled message: {packet.Opcode}");
+                        Logger.Log($"Unhandled message: {packet.Opcode}");
 
                     // Dump the message if needed
                     if (Program.MessageDumpMode)
                     {
-                        Console.WriteLine(packet.Message.RawData.ToHexString());
+                        Logger.Log(packet.Message.RawData.ToHexString());
                         SaveMessageToFile(packet);
                     }
                 }
                 catch (TaskCanceledException) { return; }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
+                    Logger.Log(e.Message);
                     Disconnect();
                 }
             }

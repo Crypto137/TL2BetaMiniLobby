@@ -31,7 +31,7 @@ namespace TL2BetaMiniLobby
         {
             _listener.Start();
             Task.Run(async () => await AcceptConnectionsAsync());
-            Console.WriteLine($"LobbyServer is listening on {BindIP}:{Port}...");
+            Logger.Log($"LobbyServer is listening on {BindIP}:{Port}...");
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace TL2BetaMiniLobby
         {
             client.TcpClient.Close();
             RemoveClient(client);
-            Console.WriteLine($"{client.Username} disconnected");
+            Logger.Log($"{client.Username} disconnected");
         }
 
         /// <summary>
@@ -114,7 +114,7 @@ namespace TL2BetaMiniLobby
                     var tcpClient = await _listener.AcceptTcpClientAsync().WaitAsync(_cts.Token);
 
                     // Accept the client
-                    Console.WriteLine($"Accepting connection from {tcpClient.Client.RemoteEndPoint}...");
+                    Logger.Log($"Accepting connection from {tcpClient.Client.RemoteEndPoint}...");
                     LobbyClient lobbyClient = new(this, tcpClient);
                     lock (_clientLock) _clientHashSet.Add(lobbyClient);
 
@@ -122,7 +122,7 @@ namespace TL2BetaMiniLobby
                     _ = Task.Run(async () => await lobbyClient.ReceiveDataAsync(_cts.Token));
                 }
                 catch (TaskCanceledException) { return; }
-                catch (Exception e) { Console.WriteLine(e.Message); }
+                catch (Exception e) { Logger.Log(e.Message); }
             }
         }
     }

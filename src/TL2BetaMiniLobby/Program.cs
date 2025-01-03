@@ -10,7 +10,7 @@ namespace TL2BetaMiniLobby
 
         static void Main(string[] args)
         {
-            Console.WriteLine($"TL2BetaMiniLobby {Assembly.GetExecutingAssembly().GetName().Version} starting...");
+            Logger.Log($"TL2BetaMiniLobby {Assembly.GetExecutingAssembly().GetName().Version} starting...");
 
             foreach (string arg in args)
             {

@@ -42,13 +42,13 @@ namespace TL2BetaMiniLobby.Messages
 
         private static void OnLoginResponseMsg(LobbyClient client, LobbyLoginResponseMsg message)
         {
-            Console.WriteLine($"{client.Username} logged in");
+            Logger.Log($"{client.Username} logged in");
             client.Send(new LobbyLoginResultMsg());
         }
 
         private static void OnCreateGameServerMsg(LobbyClient client, LobbyCreateGameServerMsg message)
         {
-            Console.WriteLine($"{client.Username} created a game server: {message.Name} (id 0x{message.GameServerId:X})");
+            Logger.Log($"{client.Username} created a game server: {message.Name} (id 0x{message.GameServerId:X})");
             client.Send(new LobbyCreateGameResponseMsg() { Response = CreateGameResponse.Success });
         }
 
