@@ -2,13 +2,6 @@
 
 namespace TL2BetaMiniLobby
 {
-    [Flags]
-    public enum PacketFlags : byte
-    {
-        None = 0,
-        Modded = 1 << 0
-    }
-
     public class Packet
     {
         public LobbyOpcode Opcode { get; }
@@ -40,7 +33,8 @@ namespace TL2BetaMiniLobby
         public byte[] Serialize()
         {
             Message.Serialize();
-            if (Message.RawData.Length > ushort.MaxValue) throw new Exception($"Message size exceeded {ushort.MaxValue} bytes.");
+            if (Message.RawData.Length > ushort.MaxValue)
+                throw new Exception($"Message size exceeded {ushort.MaxValue} bytes.");
 
             using (MemoryStream stream = new())
             using (BinaryWriter writer = new(stream))

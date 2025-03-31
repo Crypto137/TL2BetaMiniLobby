@@ -7,9 +7,9 @@ namespace TL2BetaMiniLobby
         /// <summary>
         /// Converts a byte array to a hex string.
         /// </summary>
-        public static string ToHexString(this byte[] byteArray)
+        public static string ToHexString(this byte[] bytes)
         {
-            return byteArray.Aggregate("", (current, b) => current + b.ToString("X2"));
+            return Convert.ToHexString(bytes);
         }
 
         /// <summary>
@@ -27,7 +27,8 @@ namespace TL2BetaMiniLobby
         public static void WriteFixedString8(this BinaryWriter writer, string @string)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(@string);
-            if (bytes.Length > 255) throw new Exception("String size exceeded 255 bytes.");
+            if (bytes.Length > byte.MaxValue)
+                throw new Exception($"String size exceeded {byte.MaxValue} bytes.");
 
             writer.Write((byte)@string.Length);
             writer.Write(bytes);

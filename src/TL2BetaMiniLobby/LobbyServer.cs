@@ -11,8 +11,7 @@ namespace TL2BetaMiniLobby
 
         private readonly CancellationTokenSource _cts = new();
 
-        private readonly HashSet<LobbyClient> _clientHashSet = new();
-        private readonly object _clientLock = new();
+        private readonly HashSet<LobbyClient> _clients = new();
 
         private readonly TcpListener _listener;
 
@@ -50,16 +49,16 @@ namespace TL2BetaMiniLobby
         /// </summary>
         public void DisconnectAllClients()
         {
-            lock (_clientLock)
+            lock (_clients)
             {
-                foreach (LobbyClient client in _clientHashSet)
+                foreach (LobbyClient client in _clients)
                 {
                     if (client.TcpClient.Connected == false) continue;
                     client.TcpClient.Close();
                 }
             }
 
-            _clientHashSet.Clear();
+            _clients.Clear();
         }
 
         /// <summary>
@@ -79,13 +78,13 @@ namespace TL2BetaMiniLobby
         {
             StringBuilder sb = new();
 
-            sb.Append($"{_clientHashSet.Count} client(s) online");
+            sb.Append($"{_clients.Count} client(s) online");
 
             // Add client usernames if anyone's online
-            if (_clientHashSet.Count > 0)
+            if (_clients.Count > 0)
             {
                 sb.Append(": ");
-                foreach (LobbyClient client in _clientHashSet)
+                foreach (LobbyClient client in _clients)
                     sb.Append(client.Username).Append(", ");
                 sb.Length -= 2; // Remove last comma and space
             }
@@ -98,7 +97,8 @@ namespace TL2BetaMiniLobby
         /// </summary>
         private void RemoveClient(LobbyClient client)
         {
-            lock (_clientLock) _clientHashSet.Remove(client);
+            lock (_clients)
+                _clients.Remove(client);
         }
 
         /// <summary>
@@ -111,18 +111,25 @@ namespace TL2BetaMiniLobby
                 try
                 {
                     // Wait for a client connection
-                    var tcpClient = await _listener.AcceptTcpClientAsync().WaitAsync(_cts.Token);
+                    TcpClient tcpClient = await _listener.AcceptTcpClientAsync().WaitAsync(_cts.Token);
 
                     // Accept the client
                     Logger.Log($"Accepting connection from {tcpClient.Client.RemoteEndPoint}...");
                     LobbyClient lobbyClient = new(this, tcpClient);
-                    lock (_clientLock) _clientHashSet.Add(lobbyClient);
+                    lock (_clients)
+                        _clients.Add(lobbyClient);
 
                     // Start receiving data from the client
                     _ = Task.Run(async () => await lobbyClient.ReceiveDataAsync(_cts.Token));
                 }
-                catch (TaskCanceledException) { return; }
-                catch (Exception e) { Logger.Log(e.Message); }
+                catch (TaskCanceledException)
+                {
+                    return;
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(e.Message);
+                }
             }
         }
     }

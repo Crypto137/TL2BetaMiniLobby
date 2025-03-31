@@ -31,7 +31,8 @@ namespace TL2BetaMiniLobby
             {
                 try
                 {
-                    if (TcpClient.Client == null) break;
+                    if (TcpClient.Client == null)
+                        break;
 
                     // Receive data asynchronously
                     await TcpClient.Client.ReceiveAsync(_receiveBuffer, SocketFlags.None).WaitAsync(cancellationToken);
@@ -48,7 +49,10 @@ namespace TL2BetaMiniLobby
                         SaveMessageToFile(packet);
                     }
                 }
-                catch (TaskCanceledException) { return; }
+                catch (TaskCanceledException)
+                {
+                    return;
+                }
                 catch (Exception e)
                 {
                     Logger.Log(e.Message);
@@ -79,13 +83,11 @@ namespace TL2BetaMiniLobby
         /// </summary>
         private void SaveMessageToFile(Packet packet)
         {
-            // Create packet directory if needed
             string root = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string packetDir = Path.Combine(root, "DumpedMessages");
             if (Directory.Exists(packetDir) == false)
                 Directory.CreateDirectory(packetDir);
 
-            // Save message to a file
             string filePath = $"[{DateTime.Now:yyyy-dd-MM_HH.mm.ss.fff}] {packet.Opcode}.bin";
             File.WriteAllBytes(Path.Combine(packetDir, filePath), packet.Message.RawData);
         }
